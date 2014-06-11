@@ -66,6 +66,7 @@ class SSM():
         self.minupdates = map(lambda (param, grad): (param, param - self.lr * grad), zip(self.minparams, self.mingrads))
         self.maxupdates = map(lambda (param, grad): (param, param + self.lr * grad), zip(self.maxparams, self.maxgrads))
         self.train_fn = theano.function([self.inputZ, self.inputX, self.lr], self.cost, updates = self.minupdates + self.maxupdates)
+        self.train_fn = theano.function
 
     def train(self, dataset, epochs, batch_size, lr_init, lr_decay):
         num_batches = dataset.shape[0] / batch_size
@@ -73,6 +74,8 @@ class SSM():
         for epoch in xrange(epochs):
             sum_cost = 0.0
             numpy.random.shuffle(dataset)
+            samples = self.sample_fn(100)
+            draw_mnist(samples, 'samples/', 10, 10, epoch)
             for i in xrange(num_batches):
                 x = dataset[batch_size * i: batch_size * (i+1)]
                 z = numpy.random.uniform(size=(batch_size, self.dimZ), low=-numpy.sqrt(3), high=numpy.sqrt(3)).astype('float32')
@@ -86,8 +89,21 @@ class SSM():
 def mse(a, b):
     return (a-b)**2
 
+def draw_mnist(samples, output_dir, x, y, name):
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    all = Image.new("RGB", (28*x, 28*y))
+    for i in xrange(x):
+        for j in xrange(y):
+            pic = (samples[i*x + j].reshape(28, 28)) * 255
+            im = Image.fromarray(pic)
+            all.paste(im, (28 * i, 28 * j))
+    all.save(os.path.join(output_dir, 'samples_%d.png' % name))
+
+
+
 if __name__ == '__main__':
-    ssm = SSM(784, 50, 3000, [1200, 1200], [tanh, tanh, sigm], [2000, 2000], [tanh, tanh, tanh])
+    ssm = SSM(784, 100, 3000, [1200], [tanh, sigm], [2000], [tanh, tanh])
     with gzip.open('/data/lisa/data/mnist/mnist.pkl.gz') as f:
         dataset = cPickle.load(f)[0][0]
     ssm.train(dataset, 500, 100, 0.25, 0.99)
