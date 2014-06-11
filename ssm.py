@@ -112,8 +112,8 @@ def draw_mnist(samples, output_dir, x, y, name):
 
 if __name__ == '__main__':
     ssm = SSM(784, 100, 3000, [1200], [tanh, sigm], [2000], [tanh, tanh])
-    #with gzip.open('/data/lisa/data/mnist/mnist.pkl.gz') as f:
-    with gzip.open('/Users/sherjilozair/Desktop/bengio/DeepLearningTutorials/data/mnist.pkl.gz') as f:
+    with gzip.open('/data/lisa/data/mnist/mnist.pkl.gz') as f:
+    #with gzip.open('/Users/sherjilozair/Desktop/bengio/DeepLearningTutorials/data/mnist.pkl.gz') as f:
         dataset = cPickle.load(f)[0][0]
     ssm.train(dataset, 500, 100, 0.25, 0.99)
 
